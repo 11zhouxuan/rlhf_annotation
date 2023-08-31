@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <style>
+    /* 导航栏样式 */
+     .nav {
+            position: fixed;
+            height: 50px;
+            width: 100%;
+            right: 0;
+            top: 0;
+            z-index: 999;
+            background-color: white;
+     }
+     .el-col{
+      border: 1px solid transparent
+     }
+
+
+  </style>
+  <!-- import Vue before Element -->
+  <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- 登录界面 -->
+      <el-dialog
+      title="请登录"
+      :visible="false"
+      width="30%"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+      center>
+    <el-form status-icon>
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="login_data.username" ></el-input>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input type="password" v-model="login_data.password"></el-input>
+      </el-form-item>
+    
+      <el-form-item>
+        <el-button type="primary" @click="submitLogin(login_data)">提交</el-button>
+        <el-button @click="resetLoginFrom(login_data)">重置</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+   
+
+    <!-- 登录界面  -->
+
+    <!-- 侧边导航栏 -->
+    <!-- <el-row class="tac">
+      <el-col :span="4">
+        <h5>欢迎 {{username}}</h5>
+      </el-col>
+    </el-row> -->
+    <!-- 导航栏 -->
+    <el-row >
+        <el-col :span="1">
+          <el-button plain circle size="mini"  icon="el-icon-arrow-left">
+
+          </el-button>
+        </el-col>
+        <el-col :span="20"></el-col>
+        <el-col :span="2">
+          <span >欢迎{{user_display_name}}
+        </el-col>
+        <el-col :span="1"> <i class="el-icon-more"></i> </el-col>
+        
+    </el-row>
+  
+  </div>
+</body>
+  
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: function() {
+        return {
+           need_login: true,
+           login_data: {
+            "username": null,
+            "password": null
+           },
+           is_admin: false,
+           user_display_name: "test"
+           }
+      },
+      // 初始化的函数
+      created: function () {
+        console.log('token: ' + localStorage.getItem('token'))
+        // 如果开始的时候如果没有保存令牌则需要进行登录
+        if (!localStorage.getItem('token')){
+          this.need_login = true
+        }else{
+          // 检查token是否过期
+
+        }
+  },
+     methods: {
+        // 登录
+        submitLogin(login_data){
+           
+        },
+        // 重置表单
+        resetLoginFrom(login_data){
+          console.log(login_data)
+          login_data.username = null 
+          login_data.password = null
+        }
+        
+      }
+      
+    })
+  </script>
+
+</html>
