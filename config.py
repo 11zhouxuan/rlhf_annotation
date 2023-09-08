@@ -7,7 +7,7 @@ RAW_DATA_FOLDER_NAME = 'raw_annotation_data'
 # 主要用于web的数据库地址
 MAIN_DB_NAME = 'rlhf_annotation.db'
 # JWT token过期时间
-JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=60*30)
+JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=60*60)
 JWT_SECRET_KEY = "rlhf_annotation"
 
 

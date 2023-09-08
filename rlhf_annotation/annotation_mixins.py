@@ -1,7 +1,7 @@
 
 # 实现各种标注任务分配类
 import os
-from collection_mixins import SqliteDictMixin, FIFOSQLiteQueueMixin
+from .collection_mixins import SqliteDictMixin, FIFOSQLiteQueueMixin
 import config
 
 
@@ -53,7 +53,7 @@ class AnnotationTaskBuilderBase:
     }
 
     return ret
-
+  
 
 class ComparisonAnnotationTaskBuilder(AnnotationTaskBuilderBase):
   """
@@ -67,6 +67,142 @@ class ComparisonAnnotationTaskBuilder(AnnotationTaskBuilderBase):
 
     assert ret, f'{raw_data_path} include no data'
     return ret 
+  
+
+class QueryTaskSampleBase:
+
+  def parse_sample(self,sample):
+    """解析对应的样本"""
+    raise NotImplementedError
+
+  def get_next_sample(self,task_obj,username,sample_index=None):
+    """
+    task_obj: task row
+    username: usename
+    """
+    
+    task_queue_path = task_obj.task_queue_path
+    in_progress_path = task_obj.in_progress_path
+    all_samples_path = task_obj.all_samples_path
+    
+    sample = None
+    if sample_index is not None:
+      # 此时直接索引数据
+      sample = SqliteDictMixin.get(all_samples_path,sample_index)
+      sample = self.parse_sample(sample)
+      SqliteDictMixin.insert(in_progress_path,[(username,sample_index)])
+      task_obj.in_progress_sample_num += 1
+    else:
+      sample_index_come_from = 'in_progress'
+      # 如果用户在in_progress中, 那么直接返回正在标注的数据即可
+      sample_index = SqliteDictMixin.get(in_progress_path,username)
+  
+      # 如果没有在in progress中就直接从任务队列中获取
+      if sample_index is None:
+        sample_index_come_from = 'task_queue'
+        sample_index = FIFOSQLiteQueueMixin.get(task_queue_path)
+
+      # 索引出数据
+      if sample_index is not None:
+        sample = SqliteDictMixin.get(all_samples_path,sample_index)
+        # print(sample_index,sample,all_samples_path)
+        # print(SqliteDictMixin.get_size(all_samples_path))
+        sample = self.parse_sample(sample)
+        # 将sample index写入到in_progress 中
+        SqliteDictMixin.insert(in_progress_path,[(username,sample_index)])
+        # print(SqliteDictMixin.all_items(in_progress_path))
+        # print(sample)
+        # print(sg)
+        if sample_index_come_from == 'task_queue':
+          task_obj.task_queue_sample_num -= 1
+          task_obj.in_progress_sample_num += 1
+      else:
+        raise Exception('task queue is empty')
+
+    return {
+      'sample_index':sample_index,
+      'sample': sample,
+      'sample_index_come_from': sample_index_come_from
+    }
+  
+
+class QueryComparisonTaskSample(QueryTaskSampleBase):
+  def parse_sample(self,sample):
+    """解析对应的样本"""
+    return sample
+  
+
+
+# 提交的单个标注结果
+class SubmitTaskSampleBase:
+
+  def bofore_save_sample(self,sample):
+    """解析对应的样本"""
+    raise NotImplementedError
+
+  def submit_one_sample(self,task_obj,sample):
+    task_queue_path = task_obj.task_queue_path
+    in_progress_path = task_obj.in_progress_path
+    all_samples_path = task_obj.all_samples_path
+
+    sample_index = sample['sample_index']
+    
+    # 结果写入
+    SqliteDictMixin.insert(all_samples_path,[(sample_index,self.bofore_save_sample(sample))])
+
+    #
+    SqliteDictMixin.delete(in_progress_path,sample_index)
+
+    sample_index.in_progress_sample_num -= 1 
+
+
+class SubmitComparisonTaskSample(SubmitTaskSampleBase):
+  def bofore_save_sample(self,sample):
+    """解析对应的样本"""
+    raise sample
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+
+
+
+
+
+
+
+  
+
+    
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   
 
