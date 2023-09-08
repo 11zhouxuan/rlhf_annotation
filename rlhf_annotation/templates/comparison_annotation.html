@@ -26,6 +26,11 @@
     font-size: 12px;
   }
 
+  pre {
+white-space: pre-wrap;
+word-wrap: break-word;
+}
+
 
   </style>
   <!-- import Vue before Element -->
@@ -33,7 +38,9 @@
   <!-- import JavaScript -->
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <!-- 引入jquery -->
-  <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <!-- <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script> -->
+
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
   
   <!-- 引入自定义的函数 -->
   <script src="/static/js/apis.js"></script>
@@ -82,9 +89,9 @@
 
           </el-button>
         </el-col>
-        <el-col :span="20"></el-col>
+        <el-col :span="20"> </el-col>
         <el-col :span="2">
-          <span >欢迎 [[user_display_name]]
+          <span >欢迎 [[user_display_name]] </span>
         </el-col>
         <el-col :span="1"> 
           <el-dropdown size="medium" style="float: right" @command="handleDropdownCommand">
@@ -110,27 +117,16 @@
     </el-row>
 
   <!-- 标注主界面 -->
-  
-
-
-  <el-row>
-    <!-- prompt展示 -->
-    <el-col :span="12">
-    </el-col>
-     
-    <!-- 候选展示 -->
-    <el-col :span="12">
-    </el-col>
-
-  </el-row>
-
   <!-- 翻页 -->
   <el-row>
     <!-- prompt展示 -->
     <el-col :span="10">
     </el-col>
     <el-col :span="4">
-      
+      <el-button-group>
+        <el-button type="primary" icon="el-icon-arrow-left">上一个</el-button>
+        <el-button type="primary">下一个<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+      </el-button-group>
     </el-col>
       
     <!-- 候选展示 -->
@@ -139,8 +135,51 @@
 
   </el-row>
 
+   
+
+  <el-row > 
+    <el-col :span="24"> 
+      <span style="float: left;">样本序号: [[ this.sample_data.sample_index ]]</span>
+    </el-col>
+
+  </el-row>
+
+  <el-row >
+    <!-- prompt展示 -->
+    <el-col :span="8">
+      [[ sample_data.prompt ]]
+    </el-col>
+     
+    <!-- 候选展示 -->
+    <el-col :span="16">
+      <el-table
+      :data="candidate_table_data"
+      style="width: 100%"
+      :show-header="false"
+      >
+      <el-table-column
+        label="output"
+        :min-width="90">
+        <template slot-scope="scope">
+         
+          <pre>[[ scope.row.output ]]</pre>
+        </template>
+      </el-table-column>
+     
+      <el-table-column label="rank" :min-width="10" sortable>
+        <template slot-scope="scope">
+        <el-input v-model="scope.row.rank" ></el-input>
+        </template>
+      </el-table-column>
+    </el-table>
+    </el-col>
+
+  </el-row>
+
+  
+
   </div>
 </body>
-<script src="/static/js/main.js"></script>
+<script src="/static/js/comparison_annotation.js"></script>
 
 </html>

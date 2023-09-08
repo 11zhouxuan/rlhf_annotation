@@ -41,7 +41,7 @@ def my_expired_token_callback(jwt_header, jwt_payload):
 
 # 无效token callback
 @jwt.invalid_token_loader
-def my_invalid_token_callback(jwt_header, jwt_payload):
+def my_invalid_token_callback(jwt_header):
     return jsonify(code=2, msg='invalid token')
 
 # 没有token callback
