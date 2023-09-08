@@ -28,11 +28,13 @@ var vue_obj = new Vue({
         // 获取username
       let userinfo_res = getUserInfo()
       console.log(userinfo_res)
-      if(userinfo_res['code'] == 2){
+      let need_login_array = [1,2]
+      if(need_login_array.includes(userinfo_res['code'])){
         this.need_login = true 
       }else{
         this.need_login = false
         this.user_display_name = userinfo_res['username']
+        this.is_admin = userinfo_res['is_admin']
       }
       
 },
@@ -67,6 +69,13 @@ methods: {
         // console.log(login_data)
         login_data.username = null 
         login_data.password = null
+      },
+      handleDropdownCommand(command){
+        if(command == 'logout'){
+            Logout()
+            this.need_login = true
+            this.resetLoginFrom()
+        }
       }
       
     }

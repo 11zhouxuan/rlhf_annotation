@@ -53,5 +53,5 @@ function Login(login_data){
 
 function Logout(){
     let url = ADDRESS + "/logout"
-    return myAPIPOSTCall(url)
+    return UnifiedPOSTCall(url)
 }
