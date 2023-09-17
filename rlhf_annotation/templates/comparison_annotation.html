@@ -195,7 +195,7 @@
      <!-- prompt展示 -->
     <prompt :sample_data="sample_data"> </prompt>
     <!-- 候选集展示 -->
-    <outputs v-if="show_output" :sample_data="sample_data" :col_num="outputs_col_num" :row_starts="outputs_row_starts"> </outputs> 
+    <outputs v-if="show_output" :sample_data="sample_data" :col_num="outputs_col_num" :row_starts="outputs_row_starts" :global_vue_obj="this"> </outputs> 
   </div>
 
 
