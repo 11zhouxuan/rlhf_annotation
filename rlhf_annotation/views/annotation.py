@@ -24,6 +24,8 @@ from rlhf_annotation.collection_mixins import \
     FIFOSQLiteQueueMixin, SqliteDictMixin
 from ..models import AnnotationTask
 
+from .admin import jwt_and_admin_required
+
 
 # 任务类型到采样函数的映射
 task_sample_map = {
@@ -32,22 +34,6 @@ task_sample_map = {
 
 annotation = Blueprint('annotation', __name__)
 
-def jwt_and_admin_required():
-    def wrapper(fn):
-        @wraps(fn)
-        def decorator(*args, **kwargs):
-            verify_jwt_in_request()
-            claims = get_jwt()
-            # print(claims["is_admin"])
-            # print(claims)
-            # print(srg)
-            if claims["is_admin"]:
-                return fn(*args, **kwargs)
-            else:
-                return jsonify({'msg':"Admins only!",'code':1}), 403
-        return decorator
-
-    return wrapper
 
 
 #################################
@@ -67,7 +53,7 @@ def index():
 
 
 #################################
-#         标注过程视图            #
+#         标注过程视图           #
 #################################
 
 # 获取任务样本
@@ -174,8 +160,8 @@ def submit_comparison_annotation_task():
 @annotation.route('/query_annotation_task', methods=['POST'])
 @jwt_and_admin_required()
 def query_annotation_task():
-  page = int(request.args.get('page',1))
-  per_page = int(request.args.get('per_page',10))
+  page = int(request.form.get('page',1))
+  per_page = int(request.form.get('per_page',10))
   
   tasks = AnnotationTask.query.paginate(page=page,per_page=per_page)
   # 总量

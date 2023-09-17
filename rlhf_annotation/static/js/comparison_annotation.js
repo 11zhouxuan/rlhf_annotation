@@ -108,7 +108,7 @@ var vue_obj = new Vue({
     delimiters: ['[[',']]','{{','}}'],
     data: function() {
       return {
-         need_login: true,
+         need_login: false,
          login_data: {
           "username": null,
           "password": null
@@ -158,25 +158,15 @@ var vue_obj = new Vue({
     },
     // 初始化的函数
     created: function () {
-    //   console.log('token: ' + localStorage.getItem('token'))
-      // 如果开始的时候如果没有保存令牌则需要进行登录
-      // let task_uuid = localStorage.getItem('token')
-      // if (!task_uuid){
-        // this.need_login = true
-      // }else{
-        // 检查token是否过期
-        // this.task_uuid = task_uuid
-        // 获取username
-      let userinfo_res = getUserInfo()
-      console.log(userinfo_res)
-      let need_login_array = [1,2]
-      if(need_login_array.includes(userinfo_res['code'])){
-        this.need_login = true 
-      }else{
-        this.need_login = false
-        this.user_display_name = userinfo_res['username']
-        this.is_admin = userinfo_res['is_admin']
-      }
+      // 这里的代码不能需要在vue实例构建之后执行
+      let that = this
+      that.$nextTick(function(){
+        let userinfo_res = getUserInfo()
+        console.log(userinfo_res)
+        that.user_display_name = userinfo_res['username']
+        that.is_admin = userinfo_res['is_admin']
+      })
+      
       
 },
 // 监听属性
@@ -264,3 +254,6 @@ methods: {
     }
     
   })
+
+
+

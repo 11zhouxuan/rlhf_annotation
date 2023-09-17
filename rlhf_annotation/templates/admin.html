@@ -16,8 +16,55 @@
             background-color: white;
      }
      .el-col{
-      border: 1px solid transparent
+          border: 1px solid transparent
      }
+
+     .el-row{
+      margin-bottom: 10px;
+      
+     }
+
+     .el-dropdown-link {
+          cursor: pointer;
+          color: #409EFF;
+  }
+    .el-icon-arrow-down {
+          font-size: 12px;
+  }
+
+    pre {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+        }
+    
+    .border-style {
+      border-radius: 10px;
+      border-color:black;
+      border-width: 2px;
+      border-style: solid;
+      margin: 2px;
+      padding: 2px
+    }
+
+    .output-card-border-style {
+      border-radius: 10px;
+      border-color:rgb(155, 156, 155);
+      border-width: 2px;
+      border-style: solid;
+      margin: 2px;
+      padding: 2px
+    }
+    /* .output-card {
+      width: 20%;
+      float: left;
+      border-radius: 10px;
+      border-color:black;
+      border-width: 1px;
+      border-style: solid;
+      margin: 2px;
+      padding: 2px
+    } */
+
 
 
   </style>
@@ -26,35 +73,40 @@
   <!-- import JavaScript -->
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <!-- 引入jquery -->
-  <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <!-- <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script> -->
+
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  
   <!-- 引入自定义的函数 -->
-  <script src="{{ url_for('static', filename='js/apis.js') }}"></script>
+  <script src="/static/js/apis.js"></script>
+
+
 </head>
 <body>
   <div id="app">
     <!-- 登录界面 -->
       <el-dialog
       title="请登录"
-      :visible="false"
-      width="30%"
+      :visible="need_login"
+      width="25%"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :show-close="false"
       center>
-    <el-form status-icon>
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="login_data.username" ></el-input>
-      </el-form-item>
-      <el-form-item label="密码" prop="password">
-        <el-input type="password" v-model="login_data.password"></el-input>
-      </el-form-item>
-    
-      <el-form-item>
-        <el-button type="primary" @click="submitLogin(login_data)">提交</el-button>
-        <el-button @click="resetLoginFrom(login_data)">重置</el-button>
-      </el-form-item>
-    </el-form>
-  </el-dialog>
+        <el-form status-icon>
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="login_data.username" ></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input type="password" v-model="login_data.password"></el-input>
+          </el-form-item>
+        
+          <el-form-item>
+            <el-button type="primary" @click="submitLogin(login_data)">提交</el-button>
+            <el-button @click="resetLoginFrom(login_data)">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
    
 
     <!-- 登录界面  -->
@@ -68,84 +120,83 @@
     <!-- 导航栏 -->
     <el-row >
         <el-col :span="1">
-          <el-button plain circle size="mini"  icon="el-icon-arrow-left">
-
-          </el-button>
+         
         </el-col>
-        <el-col :span="20"></el-col>
+        <el-col :span="20"> </el-col>
         <el-col :span="2">
-          <span >欢迎{{user_display_name}}
+          <span >欢迎 [[user_display_name]] </span>
         </el-col>
-        <el-col :span="1"> <i class="el-icon-more"></i> </el-col>
+        <el-col :span="1"> 
+          <el-dropdown size="medium" style="float: right" @command="handleDropdownCommand">
+            <span class="el-dropdown-link">
+              <i class="el-icon-more"></i> 
+              <!-- 下拉菜单<i class="el-icon-arrow-down el-icon--right"></i> -->
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="logout">退出登录</el-dropdown-item>    
+            </el-dropdown-menu>
+          </el-dropdown>
+       
+        </el-col>
         
     </el-row>
-  
-  </div>
-</body>
-  
 
-  <script>
-    new Vue({
-      el: '#app',
-      data: function() {
-        return {
-           need_login: true,
-           login_data: {
-            "username": null,
-            "password": null
-           },
-           is_admin: false,
-           user_display_name: "test",
-           login_token: null,
-           task_uuid: null,
-         
-           }
-      },
-      // 初始化的函数
-      created: function () {
-        // console.log('token: ' + localStorage.getItem('token'))
-        // 如果开始的时候如果没有保存令牌则需要进行登录
-        // let task_uuid = localStorage.getItem('token')
-        // if (!task_uuid){
-          // this.need_login = true
-        // }else{
-          // 检查token是否过期
-          // this.task_uuid = task_uuid
-          // 获取username
-        let userinfo_res = getUserInfo()
-        console.log(userinfo_res)
-        if(userinfo_res['code'] == 2){
-          this.need_login = true 
-        }else{
-          this.user_display_name = userinfo_res['username']
-        }
-        
-  },
-     methods: {
-        // 登录
-        submitLogin(login_data){
-          let login_res = Login(login_data)
-          if(login_res['code'] == 0){
-            this.need_login = false
-            this.user_display_name = login_res['username']
-            this.is_admin = login_res['is_admin']
-          }else{
-            this.$notify.warning({
-            title: '登陆失败',
-            message: login_res['msg']
-        });
-        }},
+  <!-- 标注主界面 -->
 
-        // 重置表单
-        resetLoginFrom(login_data){
-          // console.log(login_data)
-          login_data.username = null 
-          login_data.password = null
-        }
-        
-      }
+
+  <!-- 翻页 -->
+  <div v-if="show_sample">
+    <el-row>
+      <!-- prompt展示 -->
+      <el-col :span="10">
+      </el-col>
+      <el-col :span="4">
+        <el-button-group>
+          <el-button type="primary" size="mini" icon="el-icon-arrow-left">上一个</el-button>
+          <el-button type="primary" size="mini" >跳过</el-button>
+          <el-button type="primary" size="mini"  >下一个<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+        </el-button-group>
+      </el-col>
       
-    })
-  </script>
+      <el-col :span="10">
+      </el-col>
+
+    </el-row>
+  </div>
+
+
+  <annotation_tasks_table :global_vue_obj="vue_obj">
+
+
+  </annotation_tasks_table>
+
+  <!-- prompt显示 -->
+  <!-- <div style="margin-bottom: 10px;margin-bottom: 10px;"> <strong>sample_index: [[ sample_data.sample_index ]] </strong> </div>
+
+  <div class="border-style" style="margin-bottom: 10px;" id="prompt">
+      <div style="margin-top: 5px;"><strong>prompt:</strong></div>
+      <div style="margin-top: 5px;">
+        <pre>[[ sample_data.prompt ]]</pre>
+  </div>
+      
+  </div> -->
+
+  <!-- outputs 显示 -->
+  <!-- <div class="border-style" id="outputs">
+    <div style="margin-top: 5px;">
+      <strong>outputs:</strong>
+    </div>
+    
+    <output-card v-for="(output, output_index) in sample_data.outputs" :sample_data="sample_data" :output_index="output_index" :col_num="6">
+    
+    </output-card>
+  
+  </div> -->
+
+
+</div>
+
+</body>
+<script src="/static/js/admin.js"></script>
 
 </html>

@@ -34,6 +34,8 @@ migrate = Migrate(app, db)
 def user_identity_lookup(user):
     return user.username
 
+# code=2表示登陆问题
+
 # token 过期callback
 @jwt.expired_token_loader
 def my_expired_token_callback(jwt_header, jwt_payload):
@@ -52,7 +54,7 @@ def my_unauthorized_callback(jwt_header):
 # token 被撤销
 @jwt.revoked_token_loader
 def my_revoked_token_loader_callback(jwt_header, jwt_payload):
-    return jsonify(code=1, msg=' token is revoked')
+    return jsonify(code=2, msg=' token is revoked')
 
 
 # Register a callback function that loads a user from your database whenever
@@ -74,6 +76,9 @@ def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
     token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
     return token is not None
 
+
+
+# code = 1 表示 发生错误
 # 统一异常处理
 @app.errorhandler(Exception)
 def handle_exception(e):

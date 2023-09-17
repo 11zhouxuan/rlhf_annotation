@@ -159,7 +159,23 @@ class SubmitTaskSampleBase:
 class SubmitComparisonTaskSample(SubmitTaskSampleBase):
   def bofore_save_sample(self,sample):
     """解析对应的样本"""
-    raise sample
+    ret = {
+      "sample_index": sample['sample_index'],
+      "prompt": sample['prompt'],
+      "outputs": [
+        {
+          "output":output,
+          "rank": None,
+          "index": index,
+          "helpful_score": None,
+          "labeler": None,
+          "modify_time":None
+        } 
+        for index,output in enumerate(sample['outputs'])
+      ]
+    }
+
+    return ret
 
 
 
