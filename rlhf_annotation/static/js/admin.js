@@ -1,27 +1,96 @@
 Vue.component(
     'annotation_tasks_table',
     {
-      props: ['global_vue_obj'],
       template:
       `
       <div>
-      <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      :page-sizes="page_sizes"
-      :page-size="pagesize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total">
+        <el-container>
+          <el-main>
+            <el-table
+              :data="data"
+              stripe
+              style="width: 100%">
 
-      </el-pagination>
-      <el-table
-        :data="data"
-        stripe
-        style="width: 100%">
-        
-      </div>
-      `,
+            <el-table-column
+              prop="id"
+              label="id"
+              >
+            </el-table-column>
+            <el-table-column
+              prop="uuid"
+              label="uuid"
+              >
+            </el-table-column>
+            <el-table-column
+              prop="create_user"
+              label="create_user">
+            </el-table-column>
+
+            <el-table-column
+              prop="created_at"
+              label="create_time">
+            </el-table-column>
+
+
+            
+            <el-table-column
+              prop="task_type"
+              label="task_type">
+            </el-table-column>
+
+            <el-table-column
+              prop="task_status"
+              label="task_status">
+            </el-table-column>
+
+            <el-table-column
+              prop="modified_at"
+              label="modified_time">
+            </el-table-column>
+
+            <el-table-column
+              prop="total_sample_num"
+              label="total_sample_num">
+            </el-table-column>
+            <el-table-column
+              prop="task_queue_sample_num"
+              label="task_queue_sample_num">
+            </el-table-column>
+
+            <el-table-column
+              prop="annotated_sample_num"
+              label="annotated_sample_num">
+            </el-table-column>
+            <el-table-column
+              prop="in_progress_sample_num"
+              label="in_progress_sample_num">
+            </el-table-column>
+
+            <el-table-column
+              prop="raw_data_path"
+              label="raw_data_path">
+            </el-table-column>
+            <el-table-column
+              prop="task_work_path"
+              label="task_work_path">
+            </el-table-column>
+
+            </el-table>
+            
+            <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="currentPage"
+            :page-sizes="page_sizes"
+            :page-size="pagesize"
+            layout="total, sizes, prev, pager, next, jumper"
+            hide-on-single-page
+            :total="total">
+            </el-pagination>
+          </el-main>
+      </el-container>
+    </div>
+    `,
       data: function(){
         return {
             data: null,
@@ -32,7 +101,11 @@ Vue.component(
         }
       },
       created: function () {
-        this.reloadTableData()
+        let that = this
+      that.$nextTick(function(){
+        that.reloadTableData()
+      })
+        
       },
       methods:{
         handleSizeChange(size){
@@ -66,6 +139,7 @@ var vue_obj = new Vue({
          is_admin: false,
          user_display_name: null,
          login_token: null,
+         show_annotation_tasks: false
          
          }
     },

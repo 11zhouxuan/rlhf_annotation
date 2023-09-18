@@ -14,6 +14,7 @@ class LiberalBoolean(TypeDecorator):
       if value is not None:
           value = bool(int(value))
       return value
+  
 
 class User(db.Model):
   """
