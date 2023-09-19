@@ -13,7 +13,20 @@ function UnifiedPOSTCall(url,postdata=null){
             type : "POST",
             data: postdata,
             headers: getJWTHeader(),
-            success: function(data){ret_data = data}
+            complete : function(xhr){
+                console.log(xhr.status)
+                if((xhr.status >= 300 && xhr.status < 400) && xhr.status != 304){
+                    //重定向网址在响应头中，取出再执行跳转
+                    var redirectUrl = xhr.getResponseHeader('X-Redirect');
+                    location.href = redirectUrl;
+                }
+            },
+            success: function(data){
+                // if (data.redirect) {
+                //     window.location.href = data.redirect_url;
+                // }
+                ret_data = data
+            }
 })
 
 if(ret_data['code'] == 2){

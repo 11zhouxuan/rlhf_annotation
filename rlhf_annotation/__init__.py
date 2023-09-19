@@ -28,55 +28,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
-# Register a callback function that takes whatever object is passed in as the
-# identity when creating JWTs and converts it to a JSON serializable format.
-@jwt.user_identity_loader
-def user_identity_lookup(user):
-    return user.username
-
-# code=2表示登陆问题
-
-# token 过期callback
-@jwt.expired_token_loader
-def my_expired_token_callback(jwt_header, jwt_payload):
-    return jsonify(code=2, msg="token is expired")
-
-# 无效token callback
-@jwt.invalid_token_loader
-def my_invalid_token_callback(jwt_header):
-    return jsonify(code=2, msg='invalid token')
-
-# 没有token callback
-@jwt.unauthorized_loader
-def my_unauthorized_callback(jwt_header):
-    return jsonify(code=2, msg='unauthorized token')
-    
-# token 被撤销
-@jwt.revoked_token_loader
-def my_revoked_token_loader_callback(jwt_header, jwt_payload):
-    return jsonify(code=2, msg=' token is revoked')
-
-
-# Register a callback function that loads a user from your database whenever
-# a protected route is accessed. This should return any python object on a
-# successful lookup, or None if the lookup failed for any reason (for example
-# if the user has been deleted from the database).
-from .models import User, TokenBlocklist
-
-@jwt.user_lookup_loader
-def user_lookup_callback(_jwt_header, jwt_data):
-    username = jwt_data["username"]
-    return User.query.filter_by(username=username).one_or_none()
-
-
-# 判断token是否过期
-@jwt.token_in_blocklist_loader
-def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
-    jti = jwt_payload["jti"]
-    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
-    return token is not None
-
-
 
 # code = 1 表示 发生错误
 # 统一异常处理

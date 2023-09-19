@@ -84,8 +84,19 @@
 </head>
 <body>
   <div id="app">
+
+    <el-alert
+    title="身份认证错误"
+    type="error"
+    description="{{login_error_msg}}"
+    show-icon>
+  </el-alert>
+
+
+
+
     <!-- 登录界面 -->
-      <!-- <el-dialog
+      <el-dialog
       title="请登录"
       :visible="need_login"
       width="25%"
@@ -106,7 +117,7 @@
             <el-button @click="resetLoginFrom(login_data)">重置</el-button>
           </el-form-item>
         </el-form>
-      </el-dialog> -->
+      </el-dialog>
    
 
     <!-- 登录界面  -->
@@ -118,11 +129,9 @@
       </el-col>
     </el-row> -->
     <!-- 导航栏 -->
-    <el-row >
+    <!-- <el-row >
         <el-col :span="1">
-          <el-button plain circle size="mini"  icon="el-icon-arrow-left">
-
-          </el-button>
+         
         </el-col>
         <el-col :span="20"> </el-col>
         <el-col :span="2">
@@ -132,76 +141,23 @@
           <el-dropdown size="medium" style="float: right" @command="handleDropdownCommand">
             <span class="el-dropdown-link">
               <i class="el-icon-more"></i> 
-              <!-- 下拉菜单<i class="el-icon-arrow-down el-icon--right"></i> -->
+              下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-              <el-dropdown-item v-if="is_admin"> 进入后台 </el-dropdown-item>
-              
+              <el-dropdown-item command="logout">退出登录</el-dropdown-item>    
             </el-dropdown-menu>
           </el-dropdown>
        
         </el-col>
         
-    </el-row>
-
-  <!-- 标注主界面 -->
-
-
-  <!-- 翻页 -->
-  <div v-if="show_sample">
-    <el-row>
-      <!-- prompt展示 -->
-      <el-col :span="10">
-      </el-col>
-      <el-col :span="4">
-        <el-button-group>
-          <el-button type="primary" size="mini" icon="el-icon-arrow-left">上一个</el-button>
-          <el-button type="primary" size="mini" >跳过</el-button>
-          <el-button type="primary" size="mini"  >下一个<i class="el-icon-arrow-right el-icon--right"></i></el-button>
-        </el-button-group>
-      </el-col>
-      
-      <el-col :span="10">
-      </el-col>
-
-    </el-row>
-  </div>
-
-  <!-- prompt显示 -->
-  <!-- <div style="margin-bottom: 10px;margin-bottom: 10px;"> <strong>sample_index: [[ sample_data.sample_index ]] </strong> </div>
-
-  <div class="border-style" style="margin-bottom: 10px;" id="prompt">
-      <div style="margin-top: 5px;"><strong>prompt:</strong></div>
-      <div style="margin-top: 5px;">
-        <pre>[[ sample_data.prompt ]]</pre>
-  </div>
-      
-  </div> -->
-
-  <!-- outputs 显示 -->
-  <!-- <div class="border-style" id="outputs">
-    <div style="margin-top: 5px;">
-      <strong>outputs:</strong>
-    </div>
-    
-    <output-card v-for="(output, output_index) in sample_data.outputs" :sample_data="sample_data" :output_index="output_index" :col_num="6">
-    
-    </output-card>
-  
-  </div> -->
-  <!-- 核心组件prompt 和outputs -->
-  <div v-if="show_sample">
-     <!-- prompt展示 -->
-    <prompt :sample_data="sample_data"> </prompt>
-    <!-- 候选集展示 -->
-    <outputs v-if="show_output" :sample_data="sample_data" :col_num="outputs_col_num" :row_starts="outputs_row_starts" :global_vue_obj="this"> </outputs> 
-  </div>
+    </el-row> --> 
 
 
 </div>
 
 </body>
-<script src="/static/js/comparison_annotation.js"></script>
+<script src="/static/js/login.js"></script>
+
+
 
 </html>

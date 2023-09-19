@@ -162,7 +162,7 @@ var vue_obj = new Vue({
       let that = this
       that.$nextTick(function(){
         let userinfo_res = getUserInfo()
-        console.log(userinfo_res)
+        // console.log(userinfo_res)
         that.user_display_name = userinfo_res['username']
         that.is_admin = userinfo_res['is_admin']
       })
