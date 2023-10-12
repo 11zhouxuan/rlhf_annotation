@@ -36,7 +36,7 @@ class TokenBlocklist(db.Model):
   created_at = db.Column(db.DateTime, default=datetime.datetime.now)
 
 
-class AnnotationTask(db.Model):
+class AnnotationTask(db.Model): 
   """标注任务表"""
   id = db.Column(db.Integer, autoincrement=True,primary_key=True)
   uuid = db.Column(db.String(config.TASK_UUID_LEN),unique=True, default=partial(generate_random_str,config.TASK_UUID_LEN))

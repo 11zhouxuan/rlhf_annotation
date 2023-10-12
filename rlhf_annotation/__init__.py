@@ -54,5 +54,5 @@ from .views.admin import admin
 
 app.register_blueprint(account)  # 负责登录，用户管理
 app.register_blueprint(annotation)  # 负责标注相关
-app.register_blueprint(admin) # 后台相关系统
+# app.register_blueprint(admin) # 后台相关系统
  

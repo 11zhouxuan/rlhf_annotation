@@ -5,7 +5,12 @@ var ADDRESS = "http://127.0.0.1:5000"
 
 
 // post 请求统一处理, 包括各类异常统一处理
-function UnifiedPOSTCall(url,postdata=null){
+function UnifiedPOSTCall(url, postdata=null){
+    if(postdata !=null){
+        postdata["no_redirect"] = "true"
+    }else{
+        postdata = {"no_redirect":"true"}
+    }
     let ret_data = null
     $.ajax({
             url: url,
@@ -13,30 +18,22 @@ function UnifiedPOSTCall(url,postdata=null){
             type : "POST",
             data: postdata,
             headers: getJWTHeader(),
-            complete : function(xhr){
-                console.log(xhr.status)
-                if((xhr.status >= 300 && xhr.status < 400) && xhr.status != 304){
-                    //重定向网址在响应头中，取出再执行跳转
-                    var redirectUrl = xhr.getResponseHeader('X-Redirect');
-                    location.href = redirectUrl;
-                }
-            },
             success: function(data){
-                // if (data.redirect) {
-                //     window.location.href = data.redirect_url;
-                // }
+                // console.log('success',data)
                 ret_data = data
             }
-})
+        })
 
 if(ret_data['code'] == 2){
     // 登陆问题
-    vue_obj.need_login = true 
+    // vue_obj.need_login = true 
     vue_obj.$notify({
         title: '身份认证错误',
         message: ret_data['msg'],
         type: 'warning'
       });
+    
+    window.location.href = ret_data['redirect_url']
     throw new Error(ret_data['msg']);
 }
 if(ret_data['code'] == 1){
@@ -84,7 +81,6 @@ function Logout(){
     let url = ADDRESS + "/logout"
     return UnifiedPOSTCall(url)
 }
-
 
 
 

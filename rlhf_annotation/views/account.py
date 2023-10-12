@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 from flask import Blueprint,redirect,url_for
-from flask import render_template
+from flask import render_template, make_response
 from flask import request, jsonify
 import datetime
 from datetime import timezone
@@ -11,6 +11,14 @@ from rlhf_annotation import app,db,jwt
 
 
 
+def redict_login(msg):
+    no_redirect = request.form.get("no_redirect",False)
+    redirect_url = url_for('login', login_error_msg=msg)
+    if no_redirect:
+        return jsonify(code=2,redirect_url=redirect_url)
+    
+    return redirect(redirect_url)
+
 
 # 认证相关钩子函数
 
@@ -19,26 +27,28 @@ def user_identity_lookup(user):
     return user.username
 
 # code=2表示登陆问题
-
 # token 过期callback
 @jwt.expired_token_loader
 def my_expired_token_callback(jwt_header, jwt_payload):
-    return redirect(url_for('login', login_error_msg="token is expired"),code = 302)
+    return redict_login("token is expired")
+
 
 # 无效token callback
 @jwt.invalid_token_loader
 def my_invalid_token_callback(jwt_header):
-    return redirect(url_for('login', login_error_msg="invalid token"))
+    return redict_login("invalid token")
+    
 
 # 没有token callback
 @jwt.unauthorized_loader
 def my_unauthorized_callback(jwt_header):
-    return redirect(url_for('login', login_error_msg="unauthorized token")) 
+    return redict_login("unauthorized token")
     
 # token 被撤销
 @jwt.revoked_token_loader
 def my_revoked_token_loader_callback(jwt_header, jwt_payload):
-    return redirect(url_for('login', login_error_msg="token is revoked"))
+
+    return redict_login("token is revoked")
 
 
 # Register a callback function that loads a user from your database whenever
