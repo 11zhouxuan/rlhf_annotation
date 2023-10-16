@@ -9,7 +9,7 @@ function UnifiedPOSTCall(url, postdata=null){
     if(postdata !=null){
         postdata["no_redirect"] = "true"
     }else{
-        postdata = {"no_redirect":"true"}
+        postdata = {"no_redirect": "TRUE"}
     }
     let ret_data = null
     $.ajax({
@@ -24,6 +24,7 @@ function UnifiedPOSTCall(url, postdata=null){
             }
         })
 
+// console.log('ret_data',ret_data)
 if(ret_data['code'] == 2){
     // 登陆问题
     // vue_obj.need_login = true 
@@ -33,7 +34,7 @@ if(ret_data['code'] == 2){
         type: 'warning'
       });
     
-    window.location.href = ret_data['redirect_url']
+    window.location.href = "/login?next=" + window.location.href
     throw new Error(ret_data['msg']);
 }
 if(ret_data['code'] == 1){
@@ -69,8 +70,9 @@ function getUserInfo(){
 
 function Login(login_data){
     let url = ADDRESS + "/login"
+    console.log('login_data',login_data)
     let login_res = UnifiedPOSTCall(url,login_data)
-    console.log(login_res)
+    console.log('login_res',login_res)
     if(login_res['code'] == 0){
         setJWTToken(login_res['access_token'])
     }

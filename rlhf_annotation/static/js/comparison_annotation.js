@@ -184,32 +184,31 @@ watch : {
 
 methods: {
       // 登录
-      submitLogin(login_data){
-        let login_res = Login(login_data)
-        if(login_res['code'] == 0){
-          this.need_login = false
-          this.user_display_name = login_res['username']
-          this.is_admin = login_res['is_admin']
-        }else{
-          this.$notify.warning({
-          title: '登陆失败',
-          message: login_res['msg']
-      });
-      }},
+      // submitLogin(login_data){
+      //   let login_res = Login(login_data)
+      //   if(login_res['code'] == 0){
+      //     this.need_login = false
+      //     this.user_display_name = login_res['username']
+      //     this.is_admin = login_res['is_admin']
+      //   }else{
+      //     this.$notify.warning({
+      //     title: '登陆失败',
+      //     message: login_res['msg']
+      // });
+      // }},
 
 
       // 重置表单
-      resetLoginFrom(login_data){
-        // console.log(login_data)
-        login_data.username = null 
-        login_data.password = null
-      },
+      // resetLoginFrom(login_data){
+      //   // console.log(login_data)
+      //   login_data.username = null 
+      //   login_data.password = null
+      // },
       // 导航栏下拉框
       handleDropdownCommand(command){
         if(command == 'logout'){
             Logout()
-            this.need_login = true
-            this.resetLoginFrom()
+            window.location.href = "/login?next=" + window.location.href
         }
       },
       // 更新样本
@@ -249,6 +248,30 @@ methods: {
        })
        this.updateOutputorder()
         }
+      },
+
+
+      handleQueryNewSample(){
+        // 获取一个新的样本
+
+
+      },
+      handleSaveSample(){
+        // 保存当前样本
+        
+      },
+
+      handleNextSample(){
+        //  获取下一个样本
+        this.handlSaveSample();
+        let sample = this.handleQueryNewSample();
+        
+
+      },
+      handleLastSample(){
+        // 获取上一个样本
+        this.handlSaveSample();
+
       }
       
     }

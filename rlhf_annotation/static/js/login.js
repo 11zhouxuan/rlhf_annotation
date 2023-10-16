@@ -50,7 +50,14 @@ methods: {
           // this.need_login = false
           // this.user_display_name = login_res['username']
           // this.is_admin = login_res['is_admin']
-          window.location.href = document.referrer  // 登录成功之后跳转到前面的页面
+          var url = new URL(window.location.href)
+          next = url.searchParams.get('next')
+          if(next){
+            window.location.href = next
+          }
+          // console.log('login success',next,window.frames.top.document.referrer)
+          // window.location.href = document.referrer  // 登录成功之后跳转到前面的页面
+          // window.open(urlParams.get('next'))
         }else{
           this.$notify.warning({
           title: '登陆失败',

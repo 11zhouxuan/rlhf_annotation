@@ -4,9 +4,11 @@ from flask import Blueprint,redirect,url_for
 from flask import render_template, make_response
 from flask import request, jsonify
 import datetime
+import traceback
 from datetime import timezone
 from ..models import User, TokenBlocklist
-from flask_jwt_extended import create_access_token,jwt_required,get_jwt,get_jwt_identity
+from flask_jwt_extended import create_access_token,jwt_required,\
+    get_jwt,get_jwt_identity, verify_jwt_in_request
 from rlhf_annotation import app,db,jwt
 
 
@@ -14,9 +16,9 @@ from rlhf_annotation import app,db,jwt
 def redict_login(msg):
     no_redirect = request.form.get("no_redirect",False)
     redirect_url = url_for('login', login_error_msg=msg)
+    # print('no_redirect',no_redirect)
     if no_redirect:
         return jsonify(code=2,redirect_url=redirect_url)
-    
     return redirect(redirect_url)
 
 
@@ -88,10 +90,20 @@ def login():
         additional_claims = {"username": user.username, 'is_admin': user.is_admin}
         access_token = create_access_token(user, additional_claims=additional_claims)
         # access_token = create_access_token(identity=user)
-        return jsonify(code=0,access_token=access_token,username=username,is_admin=user.is_admin)
+        res = jsonify(code=0,access_token=access_token,username=username,is_admin=user.is_admin)
+        res.set_cookie('access_token_cookie', access_token)  # 方便后台访问
+        return res
     
-    return render_template("login.html")
 
+    try:
+        verify_jwt_in_request(locations=['cookies'])
+        next_url = request.args.get('next',None)
+        if next_url:
+            return redirect(next_url)
+    except:
+        print(traceback.format_exc())
+    return render_template("login.html")
+   
 # Endpoint for revoking the current users access token. Saved the unique
 # identifier (jti) for the JWT into our database.
 @app.route("/logout", methods=["POST"])
@@ -119,7 +131,9 @@ def get_userinfo():
 def refresh():
     current_user = get_jwt_identity()
     new_token = create_access_token(identity=current_user)
-    return jsonify({'access_token': new_token}), 200
+    res = jsonify({'access_token': new_token})
+    res.set_cookie('access_token_cookie', new_token) 
+    return res, 200
 
 
 
