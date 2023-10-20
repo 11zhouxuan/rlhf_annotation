@@ -14,14 +14,17 @@ class SqliteDictMixin:
   @staticmethod
   def get(db_path,key):
     with SqliteDict(db_path) as db:
-      value = db.get(key,None)
-    return value
-  
+      try:
+        return db[key]
+      except KeyError:
+        return None
+    
   
   @staticmethod
-  def delete(db_path,key):
-    with SqliteDict(db_path) as db:
+  def delete(db_path,key,):
+    with SqliteDict(db_path,autocommit=True) as db:
       del db[key]
+      
   
   @staticmethod
   def get_size(db_path):
@@ -42,8 +45,10 @@ class FIFOSQLiteQueueMixin:
     del q
     
   @staticmethod
-  def get(db_path, block=True, timeout=None):
+  def get(db_path, block=True, timeout=None,default=None):
     q = FIFOSQLiteQueue(path=db_path)
+    if q.empty():
+      return default
     item = q.get(block=block,timeout=timeout)
     del q
     return item
@@ -54,6 +59,12 @@ class FIFOSQLiteQueueMixin:
     ret = q.qsize()
     del q 
     return ret 
+  
+  @staticmethod
+  def empty(db_path):
+    q = FIFOSQLiteQueue(path=db_path)
+    return q.empty()
+
 
 
 

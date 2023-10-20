@@ -122,9 +122,9 @@
       </el-col>
       <el-col :span="4">
         <el-button-group>
-          <el-button type="primary" size="mini" icon="el-icon-arrow-left">上一个</el-button>
+          <el-button type="primary" size="mini" icon="el-icon-arrow-left" @click="handleGoToPreviousSample()">上一个</el-button>
           <el-button type="primary" size="mini" >跳过</el-button>
-          <el-button type="primary" size="mini"  >下一个<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+          <el-button type="primary" size="mini" @click="handleGotoNextSample()" >下一个<i class="el-icon-arrow-right el-icon--right"></i></el-button>
         </el-button-group>
       </el-col>
       
@@ -159,7 +159,7 @@
   <!-- 核心组件prompt 和outputs -->
   <div v-if="show_sample">
      <!-- prompt展示 -->
-    <prompt :sample_data="sample_data"> </prompt>
+    <prompt :sample_data="sample_data" :sample_index="sample_data.sample_index"> </prompt>
     <!-- 候选集展示 -->
     <outputs v-if="show_output" :sample_data="sample_data" :col_num="outputs_col_num" :row_starts="outputs_row_starts" :global_vue_obj="this"> </outputs> 
   </div>

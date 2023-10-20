@@ -4,7 +4,7 @@
 import json 
 
 from flask import Flask,make_response
-from flask import jsonify
+from flask import jsonify,request
 import traceback
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -35,9 +35,11 @@ migrate = Migrate(app, db)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
     # start with the correct headers and status code from the error
-    if isinstance(e, HTTPException):
-        return e
-
+    print(request.url,traceback.format_exc())
+    
+    # if isinstance(e, HTTPException):
+    #     return e
+    
     return jsonify(
         {
         "code": 1,

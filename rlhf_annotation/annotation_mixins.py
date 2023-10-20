@@ -63,7 +63,19 @@ class ComparisonAnnotationTaskBuilder(AnnotationTaskBuilderBase):
   def load_samples(self, raw_data_path):
     ret = []
     for line in open(raw_data_path):
-      ret.append(eval(line))
+      sample = eval(line)
+      _outputs = sample['outputs']
+      outputs = []
+      for i,output in enumerate(_outputs):
+        outputs.append({
+         "output":output,
+         "rank": None,
+         "index": i,
+         "helpful_score": None
+        })
+      sample['outputs'] = outputs
+      sample['prompt_score'] = None
+      ret.append(sample)
 
     assert ret, f'{raw_data_path} include no data'
     return ret 

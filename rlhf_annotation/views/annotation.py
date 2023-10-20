@@ -26,6 +26,8 @@ from ..models import AnnotationTask
 
 from .admin import jwt_and_admin_required
 
+from utils.utils import NamedThreadLock
+
 
 # 任务类型到采样函数的映射
 task_sample_map = {
@@ -35,6 +37,14 @@ task_sample_map = {
 annotation = Blueprint('annotation', __name__)
 
 
+def get_annotation_task_obj():
+  task_uuid = request.form['task_uuid']
+  
+  obj = AnnotationTask.query.filter_by(uuid=task_uuid).one_or_none()
+  if obj is  None:
+    raise Exception(f'task: {task_uuid} is not found')
+  return obj
+  
 
 #################################
 #      实现各类标注任务视图         #
@@ -57,49 +67,178 @@ def index():
 #################################
 
 # 获取任务样本
-@annotation.route('/get_task_sample',methods=['POST'])
+# @annotation.route('/get_task_sample',methods=['POST'])
+# @jwt_required()
+# def get_task_sample():
+#   """获取标注的某些列"""
+#   task_uuid = request.form['task_uuid']
+#   # obj = AnnotationTask.query.filter_by(uuid=task_uuid).one_or_none()
+#   task_obj = get_annotation_task_obj()
+  
+#   task_type = task_obj.task_type
+#   if task_obj is None:
+#      return jsonify(f'task: {task_uuid} not exist')
+  
+#   elif task_obj.task_status == 'close':
+#      return jsonify(f'task: {task_uuid} is closed')
+  
+#   # 获取队列中的数据
+#   jwt_data = get_jwt()
+#   username = jwt_data['username']
+#   sample_index =  request.form.get('sample_index',None)
+#   # 获取下一个样本，如果没有样本则会返回None
+#   sample_dict = task_sample_map[task_type]().get_next_sample(task_obj,username,sample_index=sample_index)
+#   db.session.add(task_obj)
+#   db.session.commit()
+#   return jsonify(sample_dict)
+
+# # 提交生成结果
+# @annotation.route('/submit_annotated_sample',methods=['POST'])
+# @jwt_required()
+# def submit_annotated_sample():
+#   """提交某一行的标注"""
+#   # task_uuid = request.form['task_uuid']
+  
+#   # obj = AnnotationTask.query.filter_by(uuid=task_uuid).one_or_none()
+#   # if obj is  None:
+#   #    raise Exception(f'task: {task_uuid} is not found')
+  
+#   obj = get_annotation_task_obj()
+#   sample = json.loads(request.form['sample'])
+#   annotation_mixins.SubmitComparisonTaskSample().submit_one_sample(
+#      obj,sample
+#   )
+
+#   db.session.add(obj)
+#   db.session.commit()
+#   return jsonify(code=1,msg='save success')
+
+
+@annotation.route("/save_annotated_sample", methods=['POST'])
 @jwt_required()
-def get_task_sample():
-  """获取标注的某些列"""
+def save_annotated_sample():
+  """
+  保存标注结果,
+  is_completed 表示当前标注是否完成，如果完成将在in progress中进行删除。
+  """
+
+  task_obj = get_annotation_task_obj()
+  is_completed = request.form['is_completed']  # 
+
+  username = get_jwt()['username']
+  
+  
+  sample = json.loads(request.form['sample'])
+  sample_index = sample['sample_index']
+    
+  # 结果写入
+  SqliteDictMixin.insert(
+    task_obj.all_samples_path,
+    [(sample_index,sample)]
+    )
+  
+  if is_completed:
+    _sample = SqliteDictMixin.get(
+      task_obj.in_progress_path,
+      username
+    )
+    print('_sample',_sample)
+    if _sample is not None:
+      SqliteDictMixin.delete(
+        task_obj.in_progress_path,
+        username
+      )
+    #   print('AFTER',SqliteDictMixin.get(
+    #   task_obj.in_progress_path,
+    #   username
+    # ))
+      task_obj.in_progress_sample_num -= 1 
+    
+      db.session.add(task_obj)
+      db.session.commit()
+  
+  return jsonify(code=0,msg='save success')
+
+@annotation.route('/query_next_sample', methods=['POST'])
+@jwt_required()
+def query_next_sample():
+  task_obj = get_annotation_task_obj()
   task_uuid = request.form['task_uuid']
-  sample_index =  request.form.get('sample_index',None)
-  obj = AnnotationTask.query.filter_by(uuid=task_uuid).one_or_none()
-  task_type = obj.task_type
-  if obj is None:
-     return jsonify(f'task: {task_uuid} not exist')
+
+  # print(task_obj,task_uuid)
   
-  elif obj.task_status == 'close':
-     return jsonify(f'task: {task_uuid} si closed')
+  if task_obj is None:
+     raise ValueError(f'task: {task_uuid} not exist')
+    
+  elif task_obj.task_status == 'close':
+     raise ValueError(f'task: {task_uuid} is closed')
   
-  # 获取队列中的数据
   jwt_data = get_jwt()
   username = jwt_data['username']
 
-  # 获取下一个样本，如果没有样本则会返回None
-  sample_dict = task_sample_map[task_type]().get_next_sample(obj,username,sample_index=sample_index)
-  db.session.add(obj)
-  db.session.commit()
-  return jsonify(sample_dict)
-
-# 提交生成结果
-@annotation.route('/submit_annotated_sample',methods=['POST'])
-@jwt_required()
-def submit_annotated_sample():
-  """提交某一行的标注"""
-  task_uuid = request.form['task_uuid']
+  # 尝试从in process中获取样本
+  with NamedThreadLock(task_uuid):
+    sample_index = SqliteDictMixin.get(task_obj.in_progress_path,username)
   
-  obj = AnnotationTask.query.filter_by(uuid=task_uuid).one_or_none()
-  if obj is  None:
-     raise Exception(f'task: {task_uuid} is not found')
+  # 直接返回in progress里面的样本
+  if sample_index is not None:
+    with NamedThreadLock(task_uuid):
+      sample = SqliteDictMixin.get(task_obj.all_samples_path,sample_index)
+    
+    sample['sample_index'] = sample_index
+    return jsonify(sample)
   
-  sample = json.loads(request.form['sample'])
-  annotation_mixins.SubmitComparisonTaskSample().submit_one_sample(
-     obj,sample
+  # 从任务队列中获取
+  with NamedThreadLock(task_uuid):
+    sample_index = FIFOSQLiteQueueMixin.get(
+      task_obj.task_queue_path
+      )
+    if sample_index is None:
+      raise Exception('task queue is empty')
+  
+    sample = SqliteDictMixin.get(
+      task_obj.all_samples_path,sample_index
+      )
+    SqliteDictMixin.insert(
+      task_obj.in_progress_path,
+      [(username,sample_index)]
   )
+  
+    task_obj.task_queue_sample_num -= 1
+    task_obj.in_progress_sample_num += 1
+    db.session.add(task_obj)
+    db.session.commit()
 
-  db.session.add(obj)
-  db.session.commit()
-  return jsonify(code=1,msg='save success')
+  sample['sample_index'] = sample_index
+  return jsonify(sample)
+
+
+  
+
+  
+
+
+  
+
+  
+  
+  
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
 
 #################################
 #        标注任务的增删查          #

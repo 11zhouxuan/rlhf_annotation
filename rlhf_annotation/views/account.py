@@ -5,10 +5,11 @@ from flask import render_template, make_response
 from flask import request, jsonify
 import datetime
 import traceback
+from config import JWT_ACCESS_TOKEN_EXPIRES
 from datetime import timezone
 from ..models import User, TokenBlocklist
 from flask_jwt_extended import create_access_token,jwt_required,\
-    get_jwt,get_jwt_identity, verify_jwt_in_request
+    get_jwt,get_jwt_identity, verify_jwt_in_request,get_jwt_header
 from rlhf_annotation import app,db,jwt
 
 
@@ -91,12 +92,12 @@ def login():
         access_token = create_access_token(user, additional_claims=additional_claims)
         # access_token = create_access_token(identity=user)
         res = jsonify(code=0,access_token=access_token,username=username,is_admin=user.is_admin)
-        res.set_cookie('access_token_cookie', access_token)  # 方便后台访问
+        res.set_cookie('access_token_cookie', access_token,max_age=JWT_ACCESS_TOKEN_EXPIRES)  # 方便后台访问
         return res
     
-
     try:
         verify_jwt_in_request(locations=['cookies'])
+        
         next_url = request.args.get('next',None)
         if next_url:
             return redirect(next_url)
@@ -113,7 +114,9 @@ def modify_token():
     now = datetime.datetime.now()
     db.session.add(TokenBlocklist(jti=jti, created_at=now))
     db.session.commit()
-    return jsonify(code=0,msg="JWT revoked")
+    res = jsonify(code=0,msg="JWT revoked")
+    res.set_cookie('access_token_cookie', request.cookies.get('access_token_cookie'), expires=0)
+    return res
 
 
 # 获取用户名
@@ -132,7 +135,7 @@ def refresh():
     current_user = get_jwt_identity()
     new_token = create_access_token(identity=current_user)
     res = jsonify({'access_token': new_token})
-    res.set_cookie('access_token_cookie', new_token) 
+    res.set_cookie('access_token_cookie', new_token,max_age=JWT_ACCESS_TOKEN_EXPIRES) 
     return res, 200
 
 

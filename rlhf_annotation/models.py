@@ -40,7 +40,7 @@ class AnnotationTask(db.Model):
   """标注任务表"""
   id = db.Column(db.Integer, autoincrement=True,primary_key=True)
   uuid = db.Column(db.String(config.TASK_UUID_LEN),unique=True, default=partial(generate_random_str,config.TASK_UUID_LEN))
-  create_user = db.Column(db.Text,nullable=False,index=True) # 任务创建人
+  create_user = db.Column(db.Text,nullable=False) # 任务创建人
   created_at = db.Column(db.DateTime, default=datetime.datetime.now)
   
   raw_data_path = db.Column(db.Text,nullable=False)  # 原始数据文件的地址
